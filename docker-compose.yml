@@ -1,0 +1,59 @@
+x-logging-common: &logging-common
+  logging:
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: ugc-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    restart: always
+    <<: *logging-common
+
+  web:
+    container_name: ugc-web
+    build:
+      context: .
+      dockerfile: 'Dockerfile'
+    command:
+      [
+        "bash",
+        "-c",
+        "python manage.py collectstatic --no-input
+        && python manage.py migrate
+        && python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000"
+      ]
+    ports:
+      - "8000:8000"
+      - "5678:5678"
+    restart: always
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    depends_on:
+      - db
+      # - redis
+    <<: *logging-common
+
+
+volumes:
+  pgdata:
+  static_volume:
+  media_volume:

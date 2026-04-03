@@ -106,7 +106,7 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = "ugc.User"
+# AUTH_USER_MODEL = "ugc.User"
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
