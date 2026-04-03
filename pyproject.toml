@@ -1,0 +1,31 @@
+[project]
+name = "ugc-polls"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "alexey.k",email = "alexey.k@itfox-web.com"}
+]
+readme = "README.md"
+requires-python = "^3.11"
+dependencies = [
+    "django (==5.2)",
+    "djangorestframework (==3.15)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "gunicorn (>=25.3.0,<26.0.0)",
+    "django-environ (>=0.11.2,<0.12.0)",
+    "drf-spectacular (==0.28.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[dependency-groups]
+dev = [
+    "black (>=26.3.1,<27.0.0)",
+    "flake8 (>=7.3.0,<8.0.0)"
+]
