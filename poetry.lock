@@ -185,6 +185,25 @@ docs = ["furo (>=2021.8.17b43,<2021.9.dev0)", "sphinx (>=3.5.0)", "sphinx-notfou
 testing = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)"]
 
 [[package]]
+name = "django-nested-admin"
+version = "4.1.6"
+description = "Django admin classes that allow for nested inlines"
+optional = false
+python-versions = ">=3.6"
+groups = ["main"]
+files = [
+    {file = "django_nested_admin-4.1.6-py3-none-any.whl", hash = "sha256:ae3e1d910631e6cc3b5815d80129f18c6c081b7dd7f775bf392d9bb1ac88ef93"},
+    {file = "django_nested_admin-4.1.6.tar.gz", hash = "sha256:0222475cc343e7b8813d7a5db583cddef15f5c0f44dbe17b91b4d682db7bd73a"},
+]
+
+[package.dependencies]
+python-monkey-business = ">=1.0.0"
+
+[package.extras]
+dev = ["Pillow", "black", "dj-database-url", "django-selenosis", "flake8", "pytest", "pytest-cov", "pytest-django", "pytest-xdist", "selenium"]
+test = ["Pillow", "dj-database-url", "django-selenosis", "pytest", "pytest-cov", "pytest-django", "pytest-xdist", "selenium"]
+
+[[package]]
 name = "djangorestframework"
 version = "3.15.0"
 description = "Web APIs for Django, made easy."
@@ -478,6 +497,18 @@ groups = ["dev"]
 files = [
     {file = "pyflakes-3.4.0-py2.py3-none-any.whl", hash = "sha256:f742a7dbd0d9cb9ea41e9a24a918996e8170c799fa528688d40dd582c8265f4f"},
     {file = "pyflakes-3.4.0.tar.gz", hash = "sha256:b24f96fafb7d2ab0ec5075b7350b3d2d2218eab42003821c06344973d3ea2f58"},
+]
+
+[[package]]
+name = "python-monkey-business"
+version = "1.1.0"
+description = "Utility functions for monkey-patching python code"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "python-monkey-business-1.1.0.tar.gz", hash = "sha256:8393839cc741415ed5ddc2bd58e2d4ce07f966a7d26b7aebff19dcec64818edc"},
+    {file = "python_monkey_business-1.1.0-py2.py3-none-any.whl", hash = "sha256:15b4f603c749ba9a7b4f1acd36af023a6c5ba0f7e591c945f8253f0ef44bf389"},
 ]
 
 [[package]]
@@ -817,4 +848,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "0b1ccaa2a11d7c97aa63fe0f4a166571648d52e966d4f98cc6232093fbc0acab"
+content-hash = "8eefbe418eeae004784f4fcbe044ae94bf1373a146c4d13bee4dbfae5b7d02bd"

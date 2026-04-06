@@ -53,12 +53,46 @@ class UserAnswer(models.Model):
         )
 
     def clean(self):
+        errors = {}
+
         if not self.selected_option and not self.custom_text:
-            raise ValidationError("Either selected_option or custom_text must be provided.")
+            msg = _("Требуется либо вариант ответа, либо свой ответ")
+            errors.update(
+                {
+                    "selected_option": msg,
+                    "custom_text": msg,
+                }
+            )
+            raise ValidationError(msg)
+
         if self.selected_option and self.custom_text:
-            raise ValidationError("Cannot provide both selected_option and custom_text.")
+            msg = _(
+                "Невозможно одновременно указать вариант ответа и свой ответ"
+            )
+            errors.update(
+                {
+                    "selected_option": msg,
+                    "custom_text": msg,
+                }
+            )
+
+        selected_option = self.selected_option
+        question = self.question
+        if selected_option and question and selected_option.question_id != question.id:
+            msg = _(
+                "Выбранный вариант ответа не относится к указанному вопросу."
+            )
+            errors.update(
+                {
+                    "question": msg,
+                    "selected_option": msg,
+                }
+            )
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
-        return _(
-            f"Ответ пользователя {self.session.user} на вопрос {self.question}"
-        )
+        username = self.session.user.username if self.session and self.session.user else "Unknown"
+        question_text = self.question.text[:30] if self.question else "Deleted question"
+        return f"Ответ пользователя {username} на вопрос {question_text}"

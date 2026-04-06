@@ -24,6 +24,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    path("_nested_admin/", include("nested_admin.urls")),
     path("admin/", admin.site.urls),
 
     path(
@@ -44,5 +45,5 @@ urlpatterns = [
         name="redoc"
     ),
 
-    # path("api/", include("ugc.urls")),
+    path("api/", include("ugc.urls")),
 ]
