@@ -1,53 +1,50 @@
-from rest_framework import viewsets, generics, status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiParameter,
     OpenApiResponse,
+    extend_schema,
     extend_schema_view,
     inline_serializer,
 )
-from rest_framework import serializers
+from rest_framework import generics, serializers, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from ugc.models import (
-    Poll,
-)
+from ugc.models import Poll
 from ugc.serializers import (
-    PollSerializer,
     PollDetailSerializer,
+    PollSerializer,
     QuestionSerializer,
-    SubmitAnswerInputSerializer,
     RegisterSerializer,
+    SubmitAnswerInputSerializer,
 )
-from ugc.services import (
-    AnswerService,
-    PollSessionService,
-)
+from ugc.services import AnswerService, PollSessionService
 
 
 @extend_schema_view(
     list=extend_schema(
         summary=_("Список опросов"),
-        description=_("Возвращает список всех опросов с количеством вопросов.")
+        description=_(
+            "Возвращает список всех опросов с количеством вопросов."
+        ),
     ),
     retrieve=extend_schema(
         summary=_("Детали опроса"),
         description=_(
             "Возвращает опрос со всеми вопросами и вариантами ответов."
-        )
-    )
+        ),
+    ),
 )
 class PollViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Список опросов и детальная информация.
     """
+
     queryset = Poll.objects.all()
     permission_classes = [IsAuthenticated]
 
@@ -71,16 +68,15 @@ class PollViewSet(viewsets.ReadOnlyModelViewSet):
                         "id": serializers.IntegerField(),
                         "username": serializers.CharField(),
                         "email": serializers.EmailField(),
-                    }
+                    },
                 ),
                 "token": serializers.CharField(),
-            }
+            },
         ),
         400: inline_serializer(
-            name="ErrorResponse",
-            fields={"detail": serializers.CharField()}
+            name="ErrorResponse", fields={"detail": serializers.CharField()}
         ),
-    }
+    },
 )
 class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
@@ -91,14 +87,17 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token, created = Token.objects.get_or_create(user=user)
-        return Response({
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
+        return Response(
+            {
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                },
+                "token": token.key,
             },
-            "token": token.key
-        }, status=status.HTTP_201_CREATED)
+            status=status.HTTP_201_CREATED,
+        )
 
 
 @extend_schema(
@@ -109,7 +108,7 @@ class RegisterView(generics.CreateAPIView):
         fields={
             "username": serializers.CharField(),
             "password": serializers.CharField(),
-        }
+        },
     ),
     responses={
         200: inline_serializer(
@@ -121,16 +120,15 @@ class RegisterView(generics.CreateAPIView):
                         "id": serializers.IntegerField(),
                         "username": serializers.CharField(),
                         "email": serializers.EmailField(),
-                    }
+                    },
                 ),
                 "token": serializers.CharField(),
-            }
+            },
         ),
         401: inline_serializer(
-            name="ErrorResponse",
-            fields={"error": serializers.CharField()}
+            name="ErrorResponse", fields={"error": serializers.CharField()}
         ),
-    }
+    },
 )
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -141,17 +139,19 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         if user:
             token, created = Token.objects.get_or_create(user=user)
-            return Response({
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                },
-                "token": token.key
-            })
+            return Response(
+                {
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                    },
+                    "token": token.key,
+                }
+            )
         return Response(
             {"error": "Invalid credentials"},
-            status=status.HTTP_401_UNAUTHORIZED
+            status=status.HTTP_401_UNAUTHORIZED,
         )
 
 
@@ -167,7 +167,7 @@ class LoginView(APIView):
             description=_("ID опроса"),
             required=True,
             type=int,
-            location=OpenApiParameter.PATH
+            location=OpenApiParameter.PATH,
         ),
     ],
     responses={
@@ -175,33 +175,27 @@ class LoginView(APIView):
         204: OpenApiResponse(description=_("Опрос завершён")),
         401: OpenApiResponse(description=_("Не авторизован")),
         404: OpenApiResponse(description=_("Опрос не найден")),
-    }
+    },
 )
 class NextQuestionView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, poll_id):
         poll = get_object_or_404(
-            Poll.objects.prefetch_related(
-                "questions__options"
-            ),
-            id=poll_id
+            Poll.objects.prefetch_related("questions__options"), id=poll_id
         )
-        session = PollSessionService.get_or_start_session(
-            request.user,
-            poll
-        )
+        session = PollSessionService.get_or_start_session(request.user, poll)
 
         if session is None:
             return Response(
                 {"detail": _("Вы уже прошли этот опрос.")},
-                status=status.HTTP_204_NO_CONTENT
+                status=status.HTTP_204_NO_CONTENT,
             )
 
         if session.is_completed() or session.current_question is None:
             return Response(
                 {"detail": _("Опрос завершён.")},
-                status=status.HTTP_204_NO_CONTENT
+                status=status.HTTP_204_NO_CONTENT,
             )
 
         serializer = QuestionSerializer(session.current_question)
@@ -217,16 +211,14 @@ class NextQuestionView(APIView):
     request=SubmitAnswerInputSerializer,
     responses={
         200: inline_serializer(
-            name="SubmitResponse",
-            fields={"detail": serializers.CharField()}
+            name="SubmitResponse", fields={"detail": serializers.CharField()}
         ),
         400: inline_serializer(
-            name="ErrorResponse",
-            fields={"detail": serializers.CharField()}
+            name="ErrorResponse", fields={"detail": serializers.CharField()}
         ),
         401: OpenApiResponse(description=_("Не авторизован")),
         404: OpenApiResponse(description=_("Опрос не найден")),
-    }
+    },
 )
 class SubmitAnswerView(APIView):
     permission_classes = (IsAuthenticated,)
@@ -234,23 +226,20 @@ class SubmitAnswerView(APIView):
     @transaction.atomic
     def post(self, request, poll_id):
         poll = get_object_or_404(Poll, id=poll_id)
-        session = PollSessionService.get_active_session(
-            request.user,
-            poll
-        )
+        session = PollSessionService.get_active_session(request.user, poll)
         current_q = session.current_question
 
         if current_q is None:
             return Response(
                 {"detail": _("Опрос завершён.")},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         question_id = request.data.get("question_id")
         if int(question_id) != current_q.id:
             return Response(
                 {"detail": _("Неверный вопрос.")},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         AnswerService.save_answer(
@@ -260,13 +249,8 @@ class SubmitAnswerView(APIView):
             custom_text=request.data.get("custom_text"),
         )
 
-        PollSessionService.advance_to_next_question(
-            session,
-            poll,
-            current_q
-        )
+        PollSessionService.advance_to_next_question(session, poll, current_q)
 
         return Response(
-            {"detail": _("Ответ сохранён.")},
-            status=status.HTTP_200_OK
+            {"detail": _("Ответ сохранён.")}, status=status.HTTP_200_OK
         )

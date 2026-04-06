@@ -1,11 +1,11 @@
-from django.db import models
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from .answer_option import AnswerOption
 from .poll_session import PollSession
 from .question import Question
-from .answer_option import AnswerOption
 
 
 class UserAnswer(models.Model):
@@ -28,9 +28,7 @@ class UserAnswer(models.Model):
         blank=True,
     )
     custom_text = models.TextField(
-        verbose_name=_("Текст пользовательского ответа"),
-        blank=True,
-        null=True
+        verbose_name=_("Текст пользовательского ответа"), blank=True, null=True
     )
     answered_at = models.DateTimeField(
         verbose_name=_("Время ответа"),
@@ -43,8 +41,7 @@ class UserAnswer(models.Model):
         verbose_name_plural = _("Ответы пользователей")
         constraints = (
             models.UniqueConstraint(
-                fields=["session", "question"],
-                name="unique_session_question"
+                fields=["session", "question"], name="unique_session_question"
             ),
         )
         indexes = (
@@ -78,7 +75,11 @@ class UserAnswer(models.Model):
 
         selected_option = self.selected_option
         question = self.question
-        if selected_option and question and selected_option.question_id != question.id:
+        if (
+            selected_option
+            and question
+            and selected_option.question_id != question.id
+        ):
             msg = _(
                 "Выбранный вариант ответа не относится к указанному вопросу."
             )
@@ -93,6 +94,12 @@ class UserAnswer(models.Model):
             raise ValidationError(errors)
 
     def __str__(self):
-        username = self.session.user.username if self.session and self.session.user else "Unknown"
-        question_text = self.question.text[:30] if self.question else "Deleted question"
+        username = (
+            self.session.user.username
+            if self.session and self.session.user
+            else "Unknown"
+        )
+        question_text = (
+            self.question.text[:30] if self.question else "Deleted question"
+        )
         return f"Ответ пользователя {username} на вопрос {question_text}"

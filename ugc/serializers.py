@@ -1,14 +1,9 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 
-from .models import (
-    Poll,
-    Question,
-    AnswerOption,
-    UserAnswer,
-)
+from .models import AnswerOption, Poll, Question, UserAnswer
 
 User = get_user_model()
 
@@ -85,8 +80,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not data.get("selected_option") and not data.get("custom_text"):
             msg = _(
-                """Требуется либо вариант ответа, """
-                """либо свой ответ"""
+                """Требуется либо вариант ответа, """ """либо свой ответ"""
             )
             raise serializers.ValidationError(msg)
 
@@ -96,11 +90,17 @@ class UserAnswerSerializer(serializers.ModelSerializer):
             )
             raise serializers.ValidationError(msg)
 
-        selected_option = data.get('selected_option')
-        question = data.get('question')
-        if selected_option and question and selected_option.question_id != question.id:
+        selected_option = data.get("selected_option")
+        question = data.get("question")
+        if (
+            selected_option
+            and question
+            and selected_option.question_id != question.id
+        ):
             raise serializers.ValidationError(
-                _("Выбранный вариант ответа не относится к указанному вопросу.")
+                _(
+                    "Выбранный вариант ответа не относится к указанному вопросу."
+                )
             )
 
         return data
@@ -151,21 +151,16 @@ class SubmitAnswerInputSerializer(serializers.Serializer):
         help_text="ID вопроса, на который отвечаете"
     )
     selected_option = serializers.IntegerField(
-        required=False,
-        allow_null=True,
-        help_text="ID выбранного варианта"
+        required=False, allow_null=True, help_text="ID выбранного варианта"
     )
     custom_text = serializers.CharField(
-        required=False,
-        allow_blank=True,
-        help_text="Собственный ответ"
+        required=False, allow_blank=True, help_text="Собственный ответ"
     )
 
     def validate(self, data):
         if not data.get("selected_option") and not data.get("custom_text"):
             msg = _(
-                """Требуется либо вариант ответа, """
-                """либо свой ответ"""
+                """Требуется либо вариант ответа, """ """либо свой ответ"""
             )
             raise serializers.ValidationError(msg)
 

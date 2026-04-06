@@ -1,14 +1,7 @@
-from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-from rest_framework.exceptions import (
-    ValidationError,
-    PermissionDenied,
-)
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from ugc.models import (
-    PollSession,
-    Question,
-)
+from ugc.models import PollSession, Question
 from ugc.serializers import UserAnswerSerializer
 
 
@@ -23,15 +16,15 @@ class PollSessionService:
         """
 
         if PollSession.objects.filter(
-            user=user,
-            poll=poll,
-            end_time__isnull=False
+            user=user, poll=poll, end_time__isnull=False
         ).exists():
             return None
 
         session, _ = PollSession.objects.get_or_create(
-            user=user, poll=poll, end_time__isnull=True,
-            defaults={"current_question": poll.questions.first()}
+            user=user,
+            poll=poll,
+            end_time__isnull=True,
+            defaults={"current_question": poll.questions.first()},
         )
 
         return session
@@ -41,23 +34,15 @@ class PollSessionService:
         """Возвращает активную сессию или None с информативным исключением."""
 
         try:
-            return PollSession.objects.select_related(
-                "current_question"
-            ).get(
-                user=user,
-                poll=poll,
-                end_time__isnull=True
+            return PollSession.objects.select_related("current_question").get(
+                user=user, poll=poll, end_time__isnull=True
             )
         except PollSession.DoesNotExist:
 
             if PollSession.objects.filter(
-                user=user,
-                poll=poll,
-                end_time__isnull=False
+                user=user, poll=poll, end_time__isnull=False
             ).exists():
-                raise PermissionDenied(
-                    _("Вы уже завершили этот опрос.")
-                )
+                raise PermissionDenied(_("Вы уже завершили этот опрос."))
 
             raise ValidationError(
                 _("Нет активной сессии. Начните опрос с /next-question/.")
@@ -67,10 +52,13 @@ class PollSessionService:
     def advance_to_next_question(session, poll, current_question):
         """Переводит сессию на следующий вопрос или завершает."""
 
-        next_q = Question.objects.filter(
-            poll=poll,
-            weight__gt=current_question.weight
-        ).order_by("weight").first()
+        next_q = (
+            Question.objects.filter(
+                poll=poll, weight__gt=current_question.weight
+            )
+            .order_by("weight")
+            .first()
+        )
 
         if next_q:
             session.current_question = next_q

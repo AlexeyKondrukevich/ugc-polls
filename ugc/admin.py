@@ -1,6 +1,6 @@
+import nested_admin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-import nested_admin
 
 from .models import (
     AnswerOption,

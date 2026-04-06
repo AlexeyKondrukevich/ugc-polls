@@ -16,34 +16,26 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
-    SpectacularSwaggerView,
     SpectacularRedocView,
+    SpectacularSwaggerView,
 )
 
 urlpatterns = [
     path("_nested_admin/", include("nested_admin.urls")),
     path("admin/", admin.site.urls),
-
-    path(
-        "api/schema/",
-        SpectacularAPIView.as_view(),
-        name="schema"
-    ),
-
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/swagger/",
         SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui"
+        name="swagger-ui",
     ),
-
     path(
         "api/redoc/",
         SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc"
+        name="redoc",
     ),
-
     path("api/", include("ugc.urls")),
 ]

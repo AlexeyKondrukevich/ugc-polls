@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -18,11 +18,10 @@ class PollSession(models.Model):
         Poll,
         verbose_name=_("Опрос"),
         on_delete=models.CASCADE,
-        related_name="sessions"
+        related_name="sessions",
     )
     start_time = models.DateTimeField(
-        verbose_name=_("Время начала опроса"),
-        default=timezone.now
+        verbose_name=_("Время начала опроса"), default=timezone.now
     )
     end_time = models.DateTimeField(
         verbose_name=_("Время окончания опроса"),
@@ -35,7 +34,7 @@ class PollSession(models.Model):
         verbose_name=_("Текущий вопрос"),
         null=True,
         blank=True,
-        related_name="+"
+        related_name="+",
     )
 
     class Meta:

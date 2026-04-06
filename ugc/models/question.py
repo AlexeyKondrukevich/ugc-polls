@@ -9,7 +9,7 @@ class Question(models.Model):
         Poll,
         verbose_name=_("Опрос"),
         on_delete=models.CASCADE,
-        related_name="questions"
+        related_name="questions",
     )
     text = models.TextField(
         verbose_name=_("Текст вопроса"),
@@ -31,8 +31,7 @@ class Question(models.Model):
         verbose_name_plural = _("Вопросы")
         constraints = (
             models.UniqueConstraint(
-                fields=["poll", "weight"],
-                name="unique_poll_question_weight"
+                fields=["poll", "weight"], name="unique_poll_question_weight"
             ),
         )
 
