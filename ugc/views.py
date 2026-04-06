@@ -1,7 +1,11 @@
 from django.contrib.auth import authenticate
 from django.db import transaction
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -45,13 +49,22 @@ class PollViewSet(viewsets.ReadOnlyModelViewSet):
     Список опросов и детальная информация.
     """
 
-    queryset = Poll.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Poll.objects.only(
+            "id", "title", "author", "created_at"
+        ).annotate(questions_count=Count("questions"))
 
     def get_serializer_class(self):
         if self.action == "retrieve":
             return PollDetailSerializer
         return PollSerializer
+
+    @method_decorator(cache_page(60 * 5))
+    @method_decorator(vary_on_headers("Authorization"))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 @extend_schema(
@@ -79,7 +92,7 @@ class PollViewSet(viewsets.ReadOnlyModelViewSet):
     },
 )
 class RegisterView(generics.CreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
     def post(self, request, *args, **kwargs):
@@ -131,7 +144,7 @@ class RegisterView(generics.CreateAPIView):
     },
 )
 class LoginView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         username = request.data.get("username")

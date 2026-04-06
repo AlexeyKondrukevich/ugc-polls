@@ -32,10 +32,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 
 class PollSerializer(serializers.ModelSerializer):
-    questions_count = serializers.IntegerField(
-        source="questions.count",
-        read_only=True,
-    )
+    questions_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Poll

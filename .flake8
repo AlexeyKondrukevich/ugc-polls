@@ -6,7 +6,8 @@ exclude =
     .venv,
     venv,
     migrations,
-    config/settings.py
+    config/settings.py,
+    apps.py
 ignore = 
     W503,
     E203,

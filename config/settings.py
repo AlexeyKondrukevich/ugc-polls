@@ -171,6 +171,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 25,
 }
 
 SPECTACULAR_SETTINGS = {
@@ -182,4 +184,23 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
     },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "CONNECTION_POOL_CLASS": "redis.BlockingConnectionPool",
+            "CONNECTION_POOL_CLASS_KWARGS": {
+                "max_connections": 50,
+                "timeout": 20,
+            },
+            "MAX_CONNECTIONS": 1000,
+            "PICKLE_VERSION": -1,
+        },
+        "KEY_PREFIX": "ugc",
+        "TIMEOUT": 300,
+    }
 }

@@ -4,3 +4,6 @@ from django.apps import AppConfig
 class UgcConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "ugc"
+
+    def ready(self):
+        import ugc.signals

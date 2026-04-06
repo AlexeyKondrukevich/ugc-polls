@@ -28,14 +28,13 @@ services:
     container_name: ugc-web
     build:
       context: .
-      dockerfile: 'Dockerfile'
-    command:
-      [
+      dockerfile: "Dockerfile"
+    command: [
         "bash",
         "-c",
         "python manage.py collectstatic --no-input
         && python manage.py migrate
-        && python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000"
+        && python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000",
       ]
     ports:
       - "8000:8000"
@@ -49,11 +48,26 @@ services:
       - media_volume:/app/media
     depends_on:
       - db
-      # - redis
+      - redis
     <<: *logging-common
 
+  redis:
+    image: redis:7-alpine
+    container_name: ugc-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: always
+    <<: *logging-common
 
 volumes:
   pgdata:
   static_volume:
   media_volume:
+  redis_data:
