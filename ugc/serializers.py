@@ -76,9 +76,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if not data.get("selected_option") and not data.get("custom_text"):
-            msg = _(
-                """Требуется либо вариант ответа, """ """либо свой ответ"""
-            )
+            msg = _("Требуется либо вариант ответа, либо свой ответ")
             raise serializers.ValidationError(msg)
 
         if data.get("selected_option") and data.get("custom_text"):
@@ -156,9 +154,7 @@ class SubmitAnswerInputSerializer(serializers.Serializer):
 
     def validate(self, data):
         if not data.get("selected_option") and not data.get("custom_text"):
-            msg = _(
-                """Требуется либо вариант ответа, """ """либо свой ответ"""
-            )
+            msg = _("Требуется либо вариант ответа, либо свой ответ")
             raise serializers.ValidationError(msg)
 
         if data.get("selected_option") and data.get("custom_text"):

@@ -57,6 +57,7 @@ class PollSessionService:
                 poll=poll, weight__gt=current_question.weight
             )
             .order_by("weight")
+            .prefetch_related("options")
             .first()
         )
 

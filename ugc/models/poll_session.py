@@ -46,6 +46,9 @@ class PollSession(models.Model):
             models.Index(fields=["poll", "current_question"]),
         )
 
+    def __str__(self):
+        return f"{self.user.username} - {self.poll.title}"
+
     def is_completed(self):
         return self.end_time is not None
 

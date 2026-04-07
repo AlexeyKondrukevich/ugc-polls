@@ -100,6 +100,6 @@ class UserAnswer(models.Model):
             else "Unknown"
         )
         question_text = (
-            self.question.text[:30] if self.question else "Deleted question"
+            self.question.text[:30] if self.question else _("Вопрос удалён")
         )
         return f"Ответ пользователя {username} на вопрос {question_text}"

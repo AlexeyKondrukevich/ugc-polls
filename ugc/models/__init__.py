@@ -2,6 +2,11 @@ from .answer_option import AnswerOption
 from .poll import Poll
 from .poll_session import PollSession
 from .question import Question
+from .statistics import (
+    AnswerOptionStatistics,
+    PollStatistics,
+    QuestionStatistics,
+)
 from .user import User
 from .user_answer import UserAnswer
 
@@ -12,4 +17,7 @@ __all__ = [
     "AnswerOption",
     "PollSession",
     "UserAnswer",
+    "AnswerOptionStatistics",
+    "QuestionStatistics",
+    "PollStatistics",
 ]

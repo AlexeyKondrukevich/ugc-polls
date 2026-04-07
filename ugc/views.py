@@ -52,9 +52,11 @@ class PollViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Poll.objects.only(
-            "id", "title", "author", "created_at"
-        ).annotate(questions_count=Count("questions"))
+        return (
+            Poll.objects.only("id", "title", "author", "created_at")
+            .annotate(questions_count=Count("questions"))
+            .prefetch_related("questions__options")
+        )
 
     def get_serializer_class(self):
         if self.action == "retrieve":
