@@ -1,5 +1,3 @@
-# ugc/management/commands/generate_test_data.py
-
 import random
 
 from django.contrib.auth import get_user_model

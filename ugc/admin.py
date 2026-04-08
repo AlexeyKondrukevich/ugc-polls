@@ -24,9 +24,11 @@ class QuestionInline(nested_admin.NestedStackedInline):
 @admin.register(Poll)
 class PollAdmin(nested_admin.NestedModelAdmin):
     list_display = ("id", "title", "author", "created_at")
-    list_filter = ("author",)
+    list_select_related = ("author",)
+    raw_id_fields = ("author",)
     search_fields = ("title",)
     inlines = (QuestionInline,)
+    date_hierarchy = "created_at"
 
 
 @admin.register(UserAnswer)
