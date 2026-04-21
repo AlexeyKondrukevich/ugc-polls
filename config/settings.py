@@ -104,6 +104,7 @@ DATABASES = {
         "HOST": env("DB_HOST", default="db"),
         "PORT": env("DB_PORT", default="5432"),
         "CONN_MAX_AGE": 600,
+        "CONN_HEALTH_CHECKS": True,
     }
 }
 
@@ -204,3 +205,13 @@ CACHES = {
         "TIMEOUT": 300,
     }
 }
+
+# ENABLE_SILK = env("ENABLE_SILK")
+
+# if DEBUG and ENABLE_SILK:
+#     INSTALLED_APPS += ["silk"]
+#     MIDDLEWARE.insert(0, "silk.middleware.SilkyMiddleware")
+
+#     SILKY_AUTHENTICATION = True
+#     SILKY_AUTHORISATION = True
+#     SILKY_PERMISSION_CLASS = "rest_framework.permissions.IsAdminUser"

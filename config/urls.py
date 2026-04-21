@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+# from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -39,3 +40,8 @@ urlpatterns = [
     ),
     path("api/", include("ugc.urls")),
 ]
+
+# if settings.DEBUG:
+#     urlpatterns += [
+#         path("silk/", include("silk.urls", namespace="silk")),
+#     ]
