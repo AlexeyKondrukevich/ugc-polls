@@ -125,5 +125,3 @@ class Command(BaseCommand):
 
         if answer_batch:
             AnswerOption.objects.bulk_create(answer_batch)
-        if answer_batch:
-            AnswerOption.objects.bulk_create(answer_batch)

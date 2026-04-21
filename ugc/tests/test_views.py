@@ -66,6 +66,12 @@ class LoginViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn("error", response.data)
 
+    def test_login_missing_password_returns_400(self):
+        data = {"username": "testuser"}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("password", response.data)
+
 
 class PollViewSetTest(APITestCase):
     def setUp(self):
@@ -212,6 +218,20 @@ class SubmitAnswerViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Неверный вопрос", str(response.data))
 
+    def test_submit_answer_with_non_integer_question_id(self):
+        self.client.get(reverse("next-question", args=[self.poll.id]))
+        data = {"question_id": "abc", "selected_option": self.opt1.id}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("question_id", response.data)
+
+    def test_submit_answer_without_question_id(self):
+        self.client.get(reverse("next-question", args=[self.poll.id]))
+        data = {"selected_option": self.opt1.id}
+        response = self.client.post(self.url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("question_id", response.data)
+
     def test_submit_answer_with_option_belonging_to_other_question(self):
         self.client.get(reverse("next-question", args=[self.poll.id]))
         data = {"question_id": self.q1.id, "selected_option": self.opt2.id}
@@ -239,6 +259,30 @@ class SubmitAnswerViewTest(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("завершили этот опрос", str(response.data))
+
+    def test_duplicate_submit_for_same_question_returns_controlled_error(self):
+        self.client.get(reverse("next-question", args=[self.poll.id]))
+        session = PollSession.objects.get(user=self.user, poll=self.poll)
+        session.current_question = self.q1
+        session.save(update_fields=["current_question"])
+
+        first_response = self.client.post(
+            self.url,
+            {"question_id": self.q1.id, "selected_option": self.opt1.id},
+            format="json",
+        )
+        self.assertEqual(first_response.status_code, status.HTTP_200_OK)
+
+        session.current_question = self.q1
+        session.save(update_fields=["current_question"])
+
+        second_response = self.client.post(
+            self.url,
+            {"question_id": self.q1.id, "selected_option": self.opt1.id},
+            format="json",
+        )
+        self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("уже был сохранён", str(second_response.data))
 
     def test_unauthenticated(self):
         self.client.force_authenticate(user=None)

@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 
 from ugc.models import Poll
 from ugc.serializers import (
+    LoginInputSerializer,
     PollDetailSerializer,
     PollSerializer,
     QuestionSerializer,
@@ -56,6 +57,7 @@ class PollViewSet(viewsets.ReadOnlyModelViewSet):
             Poll.objects.only("id", "title", "author", "created_at")
             .annotate(questions_count=Count("questions"))
             .prefetch_related("questions__options")
+            .order_by("id")
         )
 
     def get_serializer_class(self):
@@ -118,13 +120,7 @@ class RegisterView(generics.CreateAPIView):
 @extend_schema(
     summary=_("Логин"),
     description=_("Аутентификация по username и password, возвращает токен."),
-    request=inline_serializer(
-        name="LoginRequest",
-        fields={
-            "username": serializers.CharField(),
-            "password": serializers.CharField(),
-        },
-    ),
+    request=LoginInputSerializer,
     responses={
         200: inline_serializer(
             name="LoginResponse",
@@ -149,11 +145,15 @@ class LoginView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
+        serializer = LoginInputSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        username = serializer.validated_data["username"]
+        password = serializer.validated_data["password"]
+
         user = authenticate(username=username, password=password)
         if user:
-            token, created = Token.objects.get_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
             return Response(
                 {
                     "user": {
@@ -241,6 +241,10 @@ class SubmitAnswerView(APIView):
     @transaction.atomic
     def post(self, request, poll_id):
         poll = get_object_or_404(Poll, id=poll_id)
+        input_serializer = SubmitAnswerInputSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
+        validated_data = input_serializer.validated_data
+
         session = PollSessionService.get_active_session(request.user, poll)
         current_q = session.current_question
 
@@ -250,19 +254,24 @@ class SubmitAnswerView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        question_id = request.data.get("question_id")
-        if int(question_id) != current_q.id:
+        if validated_data["question_id"] != current_q.id:
             return Response(
                 {"detail": _("Неверный вопрос.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        AnswerService.save_answer(
-            session=session,
-            question=current_q,
-            selected_option=request.data.get("selected_option"),
-            custom_text=request.data.get("custom_text"),
-        )
+        try:
+            AnswerService.save_answer(
+                session=session,
+                question=current_q,
+                selected_option=validated_data.get("selected_option"),
+                custom_text=validated_data.get("custom_text"),
+            )
+        except IntegrityError:
+            return Response(
+                {"detail": _("Ответ на этот вопрос уже был сохранён.")},
+                status=status.HTTP_409_CONFLICT,
+            )
 
         PollSessionService.advance_to_next_question(session, poll, current_q)
 

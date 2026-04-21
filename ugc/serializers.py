@@ -141,6 +141,19 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class LoginInputSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+    password = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        trim_whitespace=False,
+    )
+
+
 class SubmitAnswerInputSerializer(serializers.Serializer):
     question_id = serializers.IntegerField(
         help_text="ID вопроса, на который отвечаете"

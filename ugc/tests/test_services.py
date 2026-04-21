@@ -51,6 +51,36 @@ class PollSessionServiceTest(TestCase):
             PollSessionService.get_active_session(self.user, self.poll)
         self.assertIn("Нет активной сессии", str(cm.exception))
 
+    def test_get_active_session_returns_first_if_multiple_active_exist(self):
+        first_session = PollSession.objects.create(
+            user=self.user, poll=self.poll, current_question=self.q1
+        )
+        PollSession.objects.create(
+            user=self.user, poll=self.poll, current_question=self.q2
+        )
+
+        session = PollSessionService.get_active_session(self.user, self.poll)
+
+        self.assertEqual(session, first_session)
+
+    def test_get_or_start_session_returns_existing_if_multiple_active_exist(self):
+        first_session = PollSession.objects.create(
+            user=self.user, poll=self.poll, current_question=self.q1
+        )
+        PollSession.objects.create(
+            user=self.user, poll=self.poll, current_question=self.q2
+        )
+
+        session = PollSessionService.get_or_start_session(self.user, self.poll)
+
+        self.assertEqual(session, first_session)
+        self.assertEqual(
+            PollSession.objects.filter(
+                user=self.user, poll=self.poll, end_time__isnull=True
+            ).count(),
+            2,
+        )
+
     def test_advance_to_next_question_updates_current_question(self):
         session = PollSession.objects.create(
             user=self.user, poll=self.poll, current_question=self.q1
@@ -73,6 +103,22 @@ class PollSessionServiceTest(TestCase):
         self.assertTrue(session.is_completed())
         self.assertIsNotNone(session.end_time)
         self.assertIsNone(session.current_question)
+
+    def test_advance_to_next_question_rejects_foreign_question(self):
+        other_poll = Poll.objects.create(title="Other Poll", author=self.user)
+        other_question = Question.objects.create(
+            poll=other_poll, text="Other", weight=1
+        )
+        session = PollSession.objects.create(
+            user=self.user, poll=self.poll, current_question=self.q1
+        )
+
+        with self.assertRaises(ValidationError) as cm:
+            PollSessionService.advance_to_next_question(
+                session, self.poll, other_question
+            )
+
+        self.assertIn("не относятся к указанному опросу", str(cm.exception))
 
 
 class AnswerServiceTest(TestCase):
@@ -152,3 +198,64 @@ class AnswerServiceTest(TestCase):
                 custom_text=None,
             )
         self.assertIn("не относится к указанному вопросу", str(cm.exception))
+
+    def test_save_answer_rejects_completed_session(self):
+        self.session.complete()
+
+        with self.assertRaises(PermissionDenied) as cm:
+            AnswerService.save_answer(
+                session=self.session,
+                question=self.question,
+                selected_option=self.option.id,
+                custom_text=None,
+            )
+
+        self.assertIn("Опрос уже завершён", str(cm.exception))
+
+    def test_save_answer_rejects_non_current_question(self):
+        other_question = Question.objects.create(
+            poll=self.poll, text="Other", weight=2
+        )
+
+        with self.assertRaises(ValidationError) as cm:
+            AnswerService.save_answer(
+                session=self.session,
+                question=other_question,
+                selected_option=None,
+                custom_text="text",
+            )
+
+        self.assertIn("только на текущий вопрос", str(cm.exception))
+
+    def test_save_answer_rejects_question_from_other_poll(self):
+        other_poll = Poll.objects.create(title="Other Poll", author=self.user)
+        other_question = Question.objects.create(
+            poll=other_poll, text="Other", weight=1
+        )
+
+        with self.assertRaises(ValidationError) as cm:
+            AnswerService.save_answer(
+                session=self.session,
+                question=other_question,
+                selected_option=None,
+                custom_text="text",
+            )
+
+        self.assertIn("не относится к опросу этой сессии", str(cm.exception))
+
+    def test_save_answer_rejects_duplicate_answer_before_insert(self):
+        UserAnswer.objects.create(
+            session=self.session,
+            question=self.question,
+            selected_option=self.option,
+        )
+
+        with self.assertRaises(ValidationError) as cm:
+            AnswerService.save_answer(
+                session=self.session,
+                question=self.question,
+                selected_option=self.option.id,
+                custom_text=None,
+            )
+
+        self.assertIn("уже был сохранён", str(cm.exception))
