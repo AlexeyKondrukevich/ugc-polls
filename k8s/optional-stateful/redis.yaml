@@ -57,13 +57,22 @@ spec:
               port: redis
             initialDelaySeconds: 15
             periodSeconds: 10
+          # resources:
+          #   requests:
+          #     cpu: 100m
+          #     memory: 256Mi
+          #   limits:
+          #     cpu: 500m
+          #     memory: 1Gi
+
+          # for weak server only
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: "50m"
+              memory: "64Mi"
             limits:
-              cpu: 500m
-              memory: 1Gi
+              cpu: "200m"
+              memory: "128Mi"
           volumeMounts:
             - name: redis-data
               mountPath: /data

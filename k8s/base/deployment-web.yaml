@@ -82,12 +82,20 @@ spec:
             timeoutSeconds: 3
             failureThreshold: 30
           resources:
+            # requests:
+            #   cpu: 250m
+            #   memory: 256Mi
+            # limits:
+            #   cpu: 1000m
+            #   memory: 1Gi
+
+            # for weak server only
             requests:
-              cpu: 250m
-              memory: 256Mi
+              cpu: "50m"
+              memory: "128Mi"
             limits:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: "200m"
+              memory: "256Mi"
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: false

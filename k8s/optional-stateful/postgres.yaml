@@ -76,12 +76,21 @@ spec:
             initialDelaySeconds: 20
             periodSeconds: 15
           resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-            limits:
-              cpu: 1
-              memory: 2Gi
+            # requests:
+            #   cpu: 250m
+            #   memory: 512Mi
+            # limits:
+            #   cpu: 1
+            #   memory: 2Gi
+
+            # for weak server only
+            resources:
+              requests:
+                cpu: "100m"
+                memory: "256Mi"
+              limits:
+                cpu: "500m"
+                memory: "512Mi"
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql
