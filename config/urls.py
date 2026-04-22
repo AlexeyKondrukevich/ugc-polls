@@ -15,7 +15,6 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-# from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
@@ -24,7 +23,12 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+# from django.conf import settings
+from config.health import health_live, health_ready
+
 urlpatterns = [
+    path("health/live/", health_live, name="health-live"),
+    path("health/ready/", health_ready, name="health-ready"),
     path("_nested_admin/", include("nested_admin.urls")),
     path("admin/", admin.site.urls),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

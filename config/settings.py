@@ -18,6 +18,7 @@ import environ
 env = environ.Env(
     DEBUG=(bool, True),
     ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
+    REDIS_URL=(str, "redis://redis:6379/1"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -190,7 +191,7 @@ SPECTACULAR_SETTINGS = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
+        "LOCATION": env("REDIS_URL"),
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_CLASS": "redis.BlockingConnectionPool",

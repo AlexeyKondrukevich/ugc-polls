@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ugc-polls-migrate
+  namespace: ugc-polls
+  labels:
+    app.kubernetes.io/name: ugc-polls
+    app.kubernetes.io/component: migrate
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ugc-polls
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          # image: ghcr.io/your-org/ugc-polls:latest
+          image: ugc-polls:prod
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              until python -c "import os, psycopg2; psycopg2.connect(dbname=os.environ['DB_NAME'], user=os.environ['DB_USER'], password=os.environ['DB_PASSWORD'], host=os.environ['DB_HOST'], port=os.environ['DB_PORT']).close()"; do
+                echo "waiting for postgres..."
+                sleep 5
+              done
+              python manage.py migrate --noinput
+          envFrom:
+            - configMapRef:
+                name: ugc-polls-config
+            - secretRef:
+                name: ugc-polls-secret
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

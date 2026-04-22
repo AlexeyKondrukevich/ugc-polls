@@ -1,0 +1,47 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ugc-polls
+#   namespace: ugc-polls
+#   labels:
+#     app.kubernetes.io/name: ugc-polls
+#   annotations:
+#     nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+#     nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+# spec:
+#   ingressClassName: nginx
+#   tls:
+#     - hosts:
+#         - api.example.com
+#       secretName: ugc-polls-tls
+#   rules:
+#     - host: api.example.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: ugc-polls-web
+#                 port:
+#                   number: 80
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ugc-polls
+  namespace: ugc-polls
+  labels:
+    app.kubernetes.io/name: ugc-polls
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ugc-polls-web
+                port:
+                  number: 80
