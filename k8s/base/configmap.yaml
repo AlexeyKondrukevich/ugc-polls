@@ -6,7 +6,7 @@ metadata:
 data:
   DEBUG: "False"
   # ALLOWED_HOSTS: "api.example.com"
-  ALLOWED_HOSTS: "92.63.192.133,localhost,127.0.0.1"
+  ALLOWED_HOSTS: "92.63.192.133,localhost,127.0.0.1,10.42.0.0/16,.kondr08.fvds.ru"
   DB_HOST: "db"
   DB_PORT: "5432"
   DB_NAME: "ugc_db"

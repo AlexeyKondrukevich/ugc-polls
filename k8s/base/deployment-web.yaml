@@ -58,29 +58,45 @@ spec:
                 name: ugc-polls-config
             - secretRef:
                 name: ugc-polls-secret
-          readinessProbe:
-            httpGet:
-              path: /health/ready/
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /health/live/
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
+          # readinessProbe:
+          #   httpGet:
+          #     path: /health/ready/
+          #     port: http
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 10
+          #   timeoutSeconds: 3
+          #   failureThreshold: 3
+          # livenessProbe:
+          #   httpGet:
+          #     path: /health/live/
+          #     port: http
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 10
+          #   timeoutSeconds: 3
+          #   failureThreshold: 3
+          # startupProbe:
+          #   httpGet:
+          #     path: /health/live/
+          #     port: http
+          #   periodSeconds: 10
+          #   timeoutSeconds: 3
+          #   failureThreshold: 30
           startupProbe:
-            httpGet:
-              path: /health/live/
-              port: http
-            periodSeconds: 10
-            timeoutSeconds: 3
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
             failureThreshold: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
           resources:
             # requests:
             #   cpu: 250m
