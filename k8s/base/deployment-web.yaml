@@ -44,15 +44,15 @@ spec:
             - --bind
             - 0.0.0.0:8000
             - --workers
-            - "4"
-            - --threads
-            - "2"
-            - --timeout
-            - "120"
-            - --max-requests
-            - "10000"
-            - --max-requests-jitter
-            - "1000"
+            - "1"
+            # - --threads
+            # - "2"
+            # - --timeout
+            # - "120"
+            # - --max-requests
+            # - "10000"
+            # - --max-requests-jitter
+            # - "1000"
           envFrom:
             - configMapRef:
                 name: ugc-polls-config
