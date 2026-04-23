@@ -5,6 +5,7 @@ resources:
   - namespace.yaml
   - serviceaccount.yaml
   - configmap.yaml
+  - configmap-nginx.yaml
   - deployment-web.yaml
   - service-web.yaml
   - hpa-web.yaml

@@ -38,6 +38,20 @@ spec:
   rules:
     - http:
         paths:
+          # - path: /static
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: ugc-polls-web
+          #       port:
+          #         number: 8080
+          # - path: /media
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: ugc-polls-web
+          #       port:
+          #         number: 8080
           - path: /
             pathType: Prefix
             backend:
