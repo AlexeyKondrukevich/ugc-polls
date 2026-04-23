@@ -118,6 +118,8 @@ spec:
               readOnly: true
             - name: nginx-cache
               mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run/nginx
           resources:
             requests:
               cpu: "10m"
@@ -153,7 +155,9 @@ spec:
         - name: nginx-config
           configMap:
             name: ugc-polls-nginx-config
-        - name: nginx-cache # новый том
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
           emptyDir: {}
       topologySpreadConstraints:
         - maxSkew: 1
