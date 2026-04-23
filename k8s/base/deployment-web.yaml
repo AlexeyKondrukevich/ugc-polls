@@ -104,7 +104,7 @@ spec:
         - name: nginx
           image: nginx:1.27-alpine
           ports:
-            - name: http
+            - name: http-nginx
               containerPort: 80
           volumeMounts:
             - name: static-volume
