@@ -116,6 +116,8 @@ spec:
             - name: nginx-config
               mountPath: /etc/nginx/conf.d
               readOnly: true
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
           resources:
             requests:
               cpu: "10m"
@@ -151,6 +153,8 @@ spec:
         - name: nginx-config
           configMap:
             name: ugc-polls-nginx-config
+        - name: nginx-cache # новый том
+          emptyDir: {}
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
